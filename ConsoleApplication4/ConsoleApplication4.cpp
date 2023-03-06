@@ -4,7 +4,8 @@
 #include <locale>
 #include <tuple>
 #include <vector>
-
+#include <stdio.h>
+#include <stdlib.h>
 #include "sqlite3.h"
 
 // DO NOT CHANGE
@@ -80,12 +81,27 @@ bool run_query(sqlite3* db, const std::string& sql, std::vector< user_record >& 
     // clear any prior results
     records.clear();
 
+    static char ok_chars[] = "abcdefghijklmnopqrstuvwxyz\
+    ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+    1234567890_-.@";
+
+    
+
     char* error_message;
     if (sqlite3_exec(db, sql.c_str(), callback, &records, &error_message) != SQLITE_OK)
     {
         std::cout << "Data failed to be queried from USERS table. ERROR = " << error_message << std::endl;
         sqlite3_free(error_message);
         return false;
+    }
+    else {
+        char *sql; // example string
+        char *user_data; // environment string
+        user_data = getenv("QUERY_STRING");
+        
+        for (sql = user_data; *(sql += strspn(sql, ok_chars)); ) {
+            *sql = '_';
+        }
     }
 
     return true;
