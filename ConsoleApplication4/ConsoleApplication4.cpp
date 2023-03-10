@@ -84,9 +84,7 @@ bool run_query(sqlite3* db, const std::string& sql, std::vector< user_record >& 
     static char ok_chars[] = "abcdefghijklmnopqrstuvwxyz\
     ABCDEFGHIJKLMNOPQRSTUVWXYZ\
     1234567890_-.@";
-
     
-
     char* error_message;
     if (sqlite3_exec(db, sql.c_str(), callback, &records, &error_message) != SQLITE_OK)
     {
@@ -95,12 +93,14 @@ bool run_query(sqlite3* db, const std::string& sql, std::vector< user_record >& 
         return false;
     }
     else {
-        char *sql; // example string
-        char *user_data; // environment string
-        user_data = getenv("QUERY_STRING");
-        
-        for (sql = user_data; *(sql += strspn(sql, ok_chars)); ) {
-            *sql = '_';
+        char *cp; // example string
+        char* reference; 
+        reference = const_cast<char*>(sql.c_str());
+
+        for (cp = reference; *cp; ++cp ) {
+            if (std::strchr(ok_chars, *cp) == nullptr) {
+                *cp = '_';
+            }
         }
     }
 
