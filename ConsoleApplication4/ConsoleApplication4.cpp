@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "sqlite3.h"
+#include <ctype.h>
 
 // DO NOT CHANGE
 typedef std::tuple<std::string, std::string, std::string> user_record;
@@ -83,25 +84,25 @@ bool run_query(sqlite3* db, const std::string& sql, std::vector< user_record >& 
 
     static char ok_chars[] = "abcdefghijklmnopqrstuvwxyz\
     ABCDEFGHIJKLMNOPQRSTUVWXYZ\
-    1234567890_-.@";
-    
+    1234567890_.@=*,'";
+
+    char* cp; // example string
+    char* reference;
+    reference = const_cast<char*>(sql.c_str());
+
+    for (cp = reference; *cp; ++cp) {
+        if (std::strchr(ok_chars, *cp) == nullptr) {
+            *cp = '_';
+        }
+    }
+
     char* error_message;
     if (sqlite3_exec(db, sql.c_str(), callback, &records, &error_message) != SQLITE_OK)
     {
+        std::cout << sql.c_str() << std::endl;
         std::cout << "Data failed to be queried from USERS table. ERROR = " << error_message << std::endl;
         sqlite3_free(error_message);
         return false;
-    }
-    else {
-        char *cp; // example string
-        char* reference; 
-        reference = const_cast<char*>(sql.c_str());
-
-        for (cp = reference; *cp; ++cp ) {
-            if (std::strchr(ok_chars, *cp) == nullptr) {
-                *cp = '_';
-            }
-        }
     }
 
     return true;
